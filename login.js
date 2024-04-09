@@ -2,22 +2,23 @@
 function signup(email, password) {
   const data = email + ' ' + password + '\n';
   saveToGitHub(data);
-  alert('Signup successful!');
 }
 
 // Function to handle user login
 function login(email, password) {
-  fetchLogFileContent().then(credentials => {
-    const isValid = credentials.some(cred => cred.email === email && cred.password === password);
-    if (isValid) {
-      alert('Login successful!');
-    } else {
-      alert('Invalid email or password');
-    }
-  }).catch(error => {
-    console.error('Error:', error);
-    alert('Failed to log in. Please try again later.');
-  });
+  fetchLogFileContent()
+    .then(credentials => {
+      const isValid = credentials.some(cred => cred.email === email && cred.password === password);
+      if (isValid) {
+        alert('Login successful!');
+      } else {
+        alert('Invalid email or password');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Failed to log in. Please try again later.');
+    });
 }
 
 // Function to save signup info to GitHub
@@ -38,7 +39,7 @@ function saveToGitHub(data) {
     return response.json();
   })
   .then(fileData => {
-    let content = atob(fileData.content); // Decode base64 content
+    let content = atob(fileData.content || ''); // Decode base64 content
     content += data; // Append new signup info to existing content
     content = btoa(content); // Encode to base64
     const message = 'Update log.txt with new signup info';
@@ -68,7 +69,7 @@ function fetchLogFileContent() {
     return response.json();
   })
   .then(data => {
-    const content = atob(data.content); // Decode base64 content
+    const content = atob(data.content || ''); // Decode base64 content
     const credentials = content.split('\n').map(line => {
       const [email, password] = line.split(' ');
       return { email, password };
@@ -95,10 +96,10 @@ function updateFile(content, message, sha) {
     })
   })
   .then(response => {
-    if (response.status === 200 || response.status === 201) {
+    if (response.ok) {
       alert('Signup info saved successfully!');
     } else {
-      alert('Failed to save signup info!');
+      throw new Error('Failed to save signup info');
     }
   })
   .catch(error => {
