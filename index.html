@@ -1,72 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Circle Button</title>
-    <style>
-        body {
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #f0f0f0;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Circle Button</title>
+<style>
+    body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #f0f0f0;
+    }
+    
+    .circle-btn {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background-color: navy;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 18px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: transform 0.2s;
+        position: relative;
+    }
+    
+    .circle-btn:hover {
+        transform: scale(1.1);
+    }
 
-        .circle-btn {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background-color: navy;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-size: 18px;
-            text-decoration: none;
-            cursor: pointer;
-            transition: transform 0.2s;
-            position: relative;
-        }
-
-            .circle-btn:hover {
-                transform: scale(1.1);
-            }
-
-        .notice-box {
-            position: absolute;
-            top: calc(100% + 4px);
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: green;
-            color: white;
-            font-weight: bold;
-            padding: 5px 10px;
-            border-radius: 5px;
-            display: none;
-        }
-    </style>
+    .notice-box {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: green;
+        color: white;
+        font-weight: bold;
+        padding: 5px 10px;
+        border-radius: 5px;
+        display: none;
+    }
+</style>
 </head>
 <body>
 
-    <a href="#" class="circle-btn" id="startButton" onclick="startMining()">Start Mining</a>
+<a href="#" class="circle-btn" id="startButton" onclick="startMining()">Start Mining</a>
 
-    <div class="notice-box" id="miningNotice">In Mining</div>
+<div class="notice-box" id="miningNotice">In Mining</div>
 
-    <script>
-    var miningInProgress = false;
+<script>
+    var miningInProgress = localStorage.getItem('miningInProgress') === 'true';
     var noticeBox = document.getElementById('miningNotice');
+    var button = document.getElementById('startButton');
 
     function startMining() {
         if (miningInProgress) {
             return;
         }
 
-        var button = document.getElementById('startButton');
         button.textContent = 'Mining';
         miningInProgress = true;
         noticeBox.style.display = 'block';
+        localStorage.setItem('miningInProgress', true);
 
         // Countdown for 24 hours
         var countdownDate = new Date().getTime() + (24 * 60 * 60 * 1000);
@@ -76,7 +77,7 @@
             var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
+            
             // Display the countdown
             button.textContent = hours + "h " + minutes + "m " + seconds + "s ";
 
@@ -86,10 +87,16 @@
                 button.textContent = 'Start Mining';
                 miningInProgress = false;
                 noticeBox.style.display = 'none';
+                localStorage.removeItem('miningInProgress');
             }
         }, 1000);
     }
-    </script>
+
+    // Check if mining was in progress before reloading the page
+    if (miningInProgress) {
+        startMining();
+    }
+</script>
 
 </body>
 </html>
