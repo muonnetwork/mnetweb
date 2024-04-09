@@ -1,8 +1,8 @@
 // Initialize Auth0
 const auth0 = new auth0.WebAuth({
-  domain: dev-751ze6tmt4uejccp.us.auth0.com,
-  clientID: KSKjKqmytc2I0GbcYcJai6oROc2A508f,
-  redirectUri: https://muonnetwork.github.io/mnetweb/?, // Change this to your actual redirect URI
+  domain: 'dev-751ze6tmt4uejccp.us.auth0.com',
+  clientID: 'KSKjKqmytc2I0GbcYcJai6oROc2A508f',
+  redirectUri: 'https://muonnetwork.github.io/mnetweb/',
   responseType: 'token id_token',
   scope: 'openid email'
 });
