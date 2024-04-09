@@ -43,21 +43,58 @@ function login(email, password) {
 }
 
 function saveToGitHub(data) {
-  fetch('https://api.github.com/repos/<username>/<repository>/contents/log.txt', {
+  fetch('https://github.com/muonnetwork/mnetweb/blob/main/log.txt', {
     method: 'GET',
     headers: {
-      'Authorization': 'token <your_access_token>'
+      'Authorization': 'token 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'
     }
   })
-  .then(response => response.json())
-  .then(fileData => {
-    let content = btoa(fileData.content + data); // Append new signup info to existing content and encode to base64
-    let message = 'Add new signup info';
-    let sha = fileData.sha;
-    createOrUpdateFile(content, message, sha);
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Failed to fetch log.txt');
+    }
+    return response.json();
   })
-  .catch(error => console.error('Error:', error));
+  .then(fileData => {
+    let content = atob(fileData.content); // Decode base64 content
+    content += data; // Append new signup info to existing content
+    content = btoa(content); // Encode to base64
+    let message = 'Update log.txt with new signup info';
+    let sha = fileData.sha;
+    updateFile(content, message, sha);
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert("Failed to update signup info. Please try again later.");
+  });
 }
+
+function updateFile(content, message, sha) {
+  fetch('https://api.github.com/repos/<username>/<repository>/contents/log.txt', {
+    method: 'PUT',
+    headers: {
+      'Authorization': 'token <your_access_token>',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      message: message,
+      content: content,
+      sha: sha
+    })
+  })
+  .then(response => {
+    if (response.status === 200 || response.status === 201) {
+      alert("Signup info saved successfully!");
+    } else {
+      throw new Error('Failed to update log.txt');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert("Failed to update signup info. Please try again later.");
+  });
+}
+
 
 function createOrUpdateFile(content, message, sha) {
   fetch('https://api.github.com/repos/<username>/<repository>/contents/log.txt', {
