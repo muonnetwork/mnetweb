@@ -43,7 +43,7 @@ function login(email, password) {
 }
 
 function saveToGitHub(data) {
-  fetch('https://github.com/muonnetwork/mnetweb/blob/main/log.txt', {
+  fetch('https://api.github.com/repos/muonnetwork/mnetweb/contents/log.txt', {
     method: 'GET',
     headers: {
       'Authorization': 'token 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'
@@ -73,7 +73,7 @@ function updateFile(content, message, sha) {
   fetch('https://api.github.com/repos/<username>/<repository>/contents/log.txt', {
     method: 'PUT',
     headers: {
-      'Authorization': 'token <your_access_token>',
+      'Authorization': 'token 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',
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
@@ -94,6 +94,7 @@ function updateFile(content, message, sha) {
     alert("Failed to update signup info. Please try again later.");
   });
 }
+
 
 
 function createOrUpdateFile(content, message, sha) {
