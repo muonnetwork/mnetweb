@@ -1,46 +1,108 @@
-// Initialize Auth0
-const auth0 = new auth0.WebAuth({
-  domain: 'dev-751ze6tmt4uejccp.us.auth0.com',
-  clientID: 'KSKjKqmytc2I0GbcYcJai6oROc2A508f',
-  redirectUri: 'https://muonnetwork.github.io/mnetweb/',
-  responseType: 'token id_token',
-  scope: 'openid email'
-});
+// Function to handle user signup
+function signup(email, password) {
+  const data = email + ' ' + password + '\n';
+  saveToGitHub(data);
+  alert('Signup successful!');
+}
 
 // Function to handle user login
-function login() {
-  auth0.authorize();
-}
-
-// Function to handle user logout
-function logout() {
-  // Clear any user session
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('id_token');
-  localStorage.removeItem('expires_at');
-}
-
-// Function to handle user authentication callback
-function handleAuthentication() {
-  auth0.parseHash((err, authResult) => {
-    if (authResult && authResult.accessToken && authResult.idToken) {
-      setSession(authResult);
-    } else if (err) {
-      console.error('Authentication error:', err);
+function login(email, password) {
+  fetchLogFileContent().then(credentials => {
+    const isValid = credentials.some(cred => cred.email === email && cred.password === password);
+    if (isValid) {
+      alert('Login successful!');
+    } else {
+      alert('Invalid email or password');
     }
+  }).catch(error => {
+    console.error('Error:', error);
+    alert('Failed to log in. Please try again later.');
   });
 }
 
-// Function to set user session
-function setSession(authResult) {
-  const expiresAt = JSON.stringify(authResult.expiresIn * 1000 + new Date().getTime());
-  localStorage.setItem('access_token', authResult.accessToken);
-  localStorage.setItem('id_token', authResult.idToken);
-  localStorage.setItem('expires_at', expiresAt);
+// Function to save signup info to GitHub
+function saveToGitHub(data) {
+  const accessToken = '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'; // Replace with your GitHub access token
+  const url = 'https://api.github.com/repos/muonnetwork/mnetweb/contents/log.txt';
+
+  fetch(url, {
+    method: 'GET',
+    headers: {
+      'Authorization': `token ${accessToken}`
+    }
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Failed to fetch log.txt');
+    }
+    return response.json();
+  })
+  .then(fileData => {
+    let content = atob(fileData.content); // Decode base64 content
+    content += data; // Append new signup info to existing content
+    content = btoa(content); // Encode to base64
+    const message = 'Update log.txt with new signup info';
+    const sha = fileData.sha;
+    updateFile(content, message, sha);
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Failed to save signup info. Please try again later.');
+  });
 }
 
-// Function to check if the user is authenticated
-function isAuthenticated() {
-  const expiresAt = JSON.parse(localStorage.getItem('expires_at'));
-  return new Date().getTime() < expiresAt;
+// Function to fetch content of log.txt file from GitHub
+function fetchLogFileContent() {
+  const accessToken = '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'; // Replace with your GitHub access token
+  const url = 'https://api.github.com/repos/muonnetwork/mnetweb/contents/log.txt';
+
+  return fetch(url, {
+    headers: {
+      'Authorization': `token ${accessToken}`
+    }
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Failed to fetch log.txt');
+    }
+    return response.json();
+  })
+  .then(data => {
+    const content = atob(data.content); // Decode base64 content
+    const credentials = content.split('\n').map(line => {
+      const [email, password] = line.split(' ');
+      return { email, password };
+    });
+    return credentials;
+  });
+}
+
+// Function to update log.txt file on GitHub
+function updateFile(content, message, sha) {
+  const accessToken = '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'; // Replace with your GitHub access token
+  const url = 'https://api.github.com/repos/muonnetwork/mnetweb/contents/log.txt';
+
+  fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `token ${accessToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      message: message,
+      content: content,
+      sha: sha
+    })
+  })
+  .then(response => {
+    if (response.status === 200 || response.status === 201) {
+      alert('Signup info saved successfully!');
+    } else {
+      alert('Failed to save signup info!');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Failed to save signup info. Please try again later.');
+  });
 }
