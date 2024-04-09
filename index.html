@@ -55,24 +55,33 @@
 <div class="notice-box" id="miningNotice">In Mining</div>
 
 <script>
-    var miningInProgress = localStorage.getItem('miningInProgress') === 'true';
     var noticeBox = document.getElementById('miningNotice');
     var button = document.getElementById('startButton');
 
     function startMining() {
-        if (miningInProgress) {
-            return;
+        var startTime = localStorage.getItem('miningStartTime');
+
+        if (startTime) {
+            // If mining was already started, calculate remaining time
+            var remainingTime = (24 * 60 * 60 * 1000) - (Date.now() - startTime);
+            if (remainingTime > 0) {
+                startCountdown(remainingTime);
+                return;
+            }
         }
 
+        // Start mining from scratch
         button.textContent = 'Mining';
-        miningInProgress = true;
         noticeBox.style.display = 'block';
-        localStorage.setItem('miningInProgress', true);
+        localStorage.setItem('miningStartTime', Date.now());
+        startCountdown(24 * 60 * 60 * 1000);
+    }
 
-        // Countdown for 24 hours
-        var countdownDate = new Date().getTime() + (24 * 60 * 60 * 1000);
+    function startCountdown(duration) {
+        // Countdown for given duration
+        var countdownDate = Date.now() + duration;
         var countdown = setInterval(function() {
-            var now = new Date().getTime();
+            var now = Date.now();
             var distance = countdownDate - now;
             var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
@@ -85,17 +94,14 @@
             if (distance < 0) {
                 clearInterval(countdown);
                 button.textContent = 'Start Mining';
-                miningInProgress = false;
                 noticeBox.style.display = 'none';
-                localStorage.removeItem('miningInProgress');
+                localStorage.removeItem('miningStartTime');
             }
         }, 1000);
     }
 
-    // Check if mining was in progress before reloading the page
-    if (miningInProgress) {
-        startMining();
-    }
+    // Check if mining was in progress
+    startMining();
 </script>
 
 </body>
